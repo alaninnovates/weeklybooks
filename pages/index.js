@@ -14,7 +14,7 @@ import {
 import {FaArrowRight} from 'react-icons/fa';
 import Head from 'next/head';
 import {useRouter} from 'next/router';
-import sql from '../lib/postgres';
+import {supabase} from '../lib/supabase';
 
 const truncate = (str, n) => {
     return str?.length > n ? str.substr(0, n - 1) + '...' : str;
@@ -92,7 +92,7 @@ const Home = ({recommendations, reviews}) => {
 }
 
 export const getStaticProps = async () => {
-    const recommendations = await sql`SELECT * FROM books LIMIT 5`;
+    const {data:recommendations} = await supabase.from('books').select().limit(5);
     const reviews = new Array(6).fill({
         title: 'Nature Kingdom',
         review: 'This book describes an in depth view of the world we live in and how whatever yes then so yeah right cool',

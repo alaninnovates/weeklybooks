@@ -1,5 +1,5 @@
 import {withMethod} from '../../lib/withMethod';
-import sql from '../../lib/postgres';
+import sql from '../../lib/supabase';
 
 export default withMethod('GET', async (req, res) => {
     const {type, searchQuery, genre} = req.query;

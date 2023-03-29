@@ -4,19 +4,38 @@ import {
     Center,
     Flex,
     Grid,
-    Heading,
+    Heading, IconButton,
     Image,
     Input, LinkBox,
     RangeSlider, RangeSliderFilledTrack, RangeSliderMark, RangeSliderThumb, RangeSliderTrack, Select,
     SimpleGrid,
-    Text, useToast,
+    Text, Tooltip, useToast, Link,
 } from '@chakra-ui/react';
-import {useState} from 'react';
-import {get} from '../lib/api';
+import {forwardRef, useState} from 'react';
 import {Genre} from '../lib/enum';
-import sql from '../lib/postgres';
+import {supabase} from '../lib/supabase';
+import {useUserStore} from '../state/useUserStore';
+import {FaPlus} from 'react-icons/fa';
+
+const MakeRecommendationButton = forwardRef(function ChakraLinkButton(props, ref) {
+    return (
+        <Tooltip label={'Make a recommendation'}>
+            <Link display={'block'} ref={ref} href={'/make-recommendation'} {...props}>
+                <IconButton
+                    as={'a'}
+                    colorScheme={'green'}
+                    size={'lg'}
+                    icon={<FaPlus/>}
+                    rounded={'full'}
+                    aria-label={'Make a recommendation'}>
+                </IconButton>
+            </Link>
+        </Tooltip>
+    );
+});
 
 const Recommendations = ({books: b}) => {
+    const user = useUserStore(state => state.user);
     const [books, setBooks] = useState(b);
     const [queryIsLoading, setQueryIsLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -27,38 +46,48 @@ const Recommendations = ({books: b}) => {
 
     const toast = useToast();
 
+    const toastError = (msg) => {
+        toast({
+            title: 'Error',
+            description: msg,
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+        });
+    };
+
     const searchBooks = async () => {
         setQueryIsLoading(true);
-        const res = await get('/api/search', Object.assign({
-            type: 'recommendations',
-            searchQuery: search,
-        }, customEnabled ? {
-            ageRange,
-            genre,
-            ratingRange,
-        } : {}));
-        const resp = await res.json();
-        if (res.status === 200) {
-            setBooks(resp);
-        } else {
-            toast({
-                title: 'Error',
-                description: resp.error,
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
+        if (!search) {
+            toastError('Please enter a search term');
+            setQueryIsLoading(false);
+            return;
+        } else if (search.length < 3) {
+            toastError('Please enter a longer search term');
+            setQueryIsLoading(false);
+            return;
         }
+        const {data, error} = await supabase.from('books').select()
+            .ilike('title', `%${search}%`)
+            .gte('age', ageRange[0])
+            .lte('age', ageRange[1])
+            .gte('rating', ratingRange[0])
+            .lte('rating', ratingRange[1])
+            .eq('genre', genre);
+        setBooks(data);
         setQueryIsLoading(false);
     };
 
     return (
         <Box>
+            {user && (
+                <MakeRecommendationButton position={'fixed'} bottom={10} right={10}/>
+            )}
             <Center py={10}>
                 <Text as="h1" fontSize={'5xl'}>Recommendations</Text>
             </Center>
             <Center>
-                <Flex w={'50%'}>
+                <Flex w={'70%'}>
                     <Button
                         onClick={() => {
                             setBooks(b);
@@ -74,7 +103,8 @@ const Recommendations = ({books: b}) => {
                     >
                         Reset
                     </Button>
-                    <Input placeholder="Search for a book" size="lg" value={search} onChange={(e) => setSearch(e.target.value)}/>
+                    <Input placeholder="Search for a book" size="lg" value={search}
+                           onChange={(e) => setSearch(e.target.value)}/>
                     <Button ml={4} size="lg" colorScheme="green" onClick={searchBooks}
                             isLoading={queryIsLoading}>Search</Button>
                     <Button ml={4} size="lg" colorScheme="teal" onClick={() => setCustomEnabled(c => !c)}>Custom
@@ -86,7 +116,8 @@ const Recommendations = ({books: b}) => {
                     <Flex w={'30%'} flexDir={'column'} gap={10}>
                         <Flex flexDir={'column'}>
                             <Text>Age group</Text>
-                            <RangeSlider aria-label={['min', 'max']} defaultValue={ageRange} min={4} max={32} step={2}
+                            <RangeSlider aria-label={['min', 'max']} defaultValue={ageRange} min={4} max={32}
+                                         step={2}
                                          onChangeEnd={(v) => setAgeRange(v)}>
                                 {new Array(8).fill('').map((_, i) => (
                                     <RangeSliderMark key={i} value={4 + i * 4}>
@@ -166,12 +197,14 @@ const Recommendations = ({books: b}) => {
 };
 
 export const getServerSideProps = async () => {
-    const books = await sql`SELECT * FROM books LIMIT 50`;
+    const {data: books} = await supabase.from('books').select().order('created_at', {
+        ascending: false,
+    }).limit(50);
     return {
         props: {
             books: JSON.parse(JSON.stringify(books)),
-        }
-    }
-}
+        },
+    };
+};
 
 export default Recommendations;

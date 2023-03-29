@@ -1,4 +1,3 @@
-import sql from '../../lib/postgres';
 import {
     Avatar,
     Box,
@@ -9,7 +8,6 @@ import {
     HStack,
     Icon,
     Image,
-    List,
     ListItem,
     Stack,
     Text, UnorderedList,
@@ -17,6 +15,7 @@ import {
 import {FaTheaterMasks} from 'react-icons/fa';
 import {MdChildFriendly} from 'react-icons/md';
 import {BsStarFill, BsStarHalf, BsStar} from 'react-icons/bs';
+import {supabase} from '../../lib/supabase';
 
 const Stars = ({rating}) => {
     const stars = [];
@@ -111,16 +110,8 @@ const Book = ({book, characters}) => {
 
 export const getServerSideProps = async (context) => {
     const {id} = context.query;
-    const [book] = await sql`
-        SELECT *
-        FROM books
-        WHERE books.id = ${id}
-    `;
-    const characters = await sql`
-        SELECT *
-        FROM characters
-        WHERE characters.book_id = ${id}
-    `;
+    const {data: book, error} = await supabase.from('books').select().eq('id', id).maybeSingle();
+    const {data: characters, error: error2} = await supabase.from('characters').select().eq('book_id', id);
     if (!book) {
         return {
             notFound: true,
