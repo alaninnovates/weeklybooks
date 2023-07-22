@@ -4,38 +4,56 @@ import {
     Center,
     Flex,
     Grid,
-    Heading, IconButton,
+    Heading,
+    IconButton,
     Image,
-    Input, LinkBox,
-    RangeSlider, RangeSliderFilledTrack, RangeSliderMark, RangeSliderThumb, RangeSliderTrack, Select,
+    Input,
+    Link,
+    LinkBox,
+    RangeSlider,
+    RangeSliderFilledTrack,
+    RangeSliderMark,
+    RangeSliderThumb,
+    RangeSliderTrack,
+    Select,
     SimpleGrid,
-    Text, Tooltip, useToast, Link,
+    Text,
+    Tooltip,
+    useToast,
 } from '@chakra-ui/react';
-import {forwardRef, useState} from 'react';
-import {Genre} from '../lib/enum';
-import {supabase} from '../lib/supabase';
-import {useUserStore} from '../state/useUserStore';
-import {FaPlus} from 'react-icons/fa';
+import { forwardRef, useState } from 'react';
+import { Genre } from '../lib/enum';
+import { supabase } from '../lib/supabase';
+import { useUserStore } from '../state/useUserStore';
+import { FaPlus } from 'react-icons/fa';
 
-const MakeRecommendationButton = forwardRef(function ChakraLinkButton(props, ref) {
+const MakeRecommendationButton = forwardRef(function ChakraLinkButton(
+    props,
+    ref,
+) {
     return (
         <Tooltip label={'Make a recommendation'}>
-            <Link display={'block'} ref={ref} href={'/make-recommendation'} {...props}>
+            <Link
+                display={'block'}
+                ref={ref}
+                href={'/make/recommendation'}
+                {...props}
+            >
                 <IconButton
                     as={'a'}
                     colorScheme={'green'}
                     size={'lg'}
                     icon={<FaPlus/>}
                     rounded={'full'}
-                    aria-label={'Make a recommendation'}>
-                </IconButton>
+                    aria-label={'Make a recommendation'}
+                />
             </Link>
         </Tooltip>
     );
 });
 
-const Recommendations = ({books: b}) => {
-    const user = useUserStore(state => state.user);
+const Recommendations = ({ books: b }) => {
+    const user = useUserStore((state) => state.user);
     const [books, setBooks] = useState(b);
     const [queryIsLoading, setQueryIsLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -67,7 +85,9 @@ const Recommendations = ({books: b}) => {
             setQueryIsLoading(false);
             return;
         }
-        const {data, error} = await supabase.from('books').select()
+        const { data } = await supabase
+            .from('books')
+            .select()
             .ilike('title', `%${search}%`)
             .gte('age', ageRange[0])
             .lte('age', ageRange[1])
@@ -81,10 +101,16 @@ const Recommendations = ({books: b}) => {
     return (
         <Box>
             {user && (
-                <MakeRecommendationButton position={'fixed'} bottom={10} right={10}/>
+                <MakeRecommendationButton
+                    position={'fixed'}
+                    bottom={10}
+                    right={10}
+                />
             )}
             <Center py={10}>
-                <Text as="h1" fontSize={'5xl'}>Recommendations</Text>
+                <Text as="h1" fontSize={'5xl'}>
+                    Recommendations
+                </Text>
             </Center>
             <Center>
                 <Flex w={'70%'}>
@@ -103,12 +129,29 @@ const Recommendations = ({books: b}) => {
                     >
                         Reset
                     </Button>
-                    <Input placeholder="Search for a book" size="lg" value={search}
-                           onChange={(e) => setSearch(e.target.value)}/>
-                    <Button ml={4} size="lg" colorScheme="green" onClick={searchBooks}
-                            isLoading={queryIsLoading}>Search</Button>
-                    <Button ml={4} size="lg" colorScheme="teal" onClick={() => setCustomEnabled(c => !c)}>Custom
-                        Filter</Button>
+                    <Input
+                        placeholder="Search for a book"
+                        size="lg"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <Button
+                        ml={4}
+                        size="lg"
+                        colorScheme="green"
+                        onClick={searchBooks}
+                        isLoading={queryIsLoading}
+                    >
+                        Search
+                    </Button>
+                    <Button
+                        ml={4}
+                        size="lg"
+                        colorScheme="teal"
+                        onClick={() => setCustomEnabled((c) => !c)}
+                    >
+                        Custom Filter
+                    </Button>
                 </Flex>
             </Center>
             {customEnabled && (
@@ -116,9 +159,14 @@ const Recommendations = ({books: b}) => {
                     <Flex w={'30%'} flexDir={'column'} gap={10}>
                         <Flex flexDir={'column'}>
                             <Text>Age group</Text>
-                            <RangeSlider aria-label={['min', 'max']} defaultValue={ageRange} min={4} max={32}
-                                         step={2}
-                                         onChangeEnd={(v) => setAgeRange(v)}>
+                            <RangeSlider
+                                aria-label={['min', 'max']}
+                                defaultValue={ageRange}
+                                min={4}
+                                max={32}
+                                step={2}
+                                onChangeEnd={(v) => setAgeRange(v)}
+                            >
                                 {new Array(8).fill('').map((_, i) => (
                                     <RangeSliderMark key={i} value={4 + i * 4}>
                                         <Text fontSize={'sm'}>{4 + i * 4}</Text>
@@ -133,8 +181,12 @@ const Recommendations = ({books: b}) => {
                         </Flex>
                         <Flex flexDir={'column'}>
                             <Text>Genre</Text>
-                            <Select placeholder="Select genre" value={genre} ml={4}
-                                    onChange={(g) => setGenre(g.target.value)}>
+                            <Select
+                                placeholder="Select genre"
+                                value={genre}
+                                ml={4}
+                                onChange={(g) => setGenre(g.target.value)}
+                            >
                                 {Object.values(Genre).map((genre) => (
                                     <option key={genre} value={genre}>
                                         {genre}
@@ -144,8 +196,13 @@ const Recommendations = ({books: b}) => {
                         </Flex>
                         <Flex flexDir={'column'}>
                             <Text>Stars</Text>
-                            <RangeSlider aria-label={['min', 'max']} defaultValue={ratingRange} min={1} max={5}
-                                         onChangeEnd={(r) => setRatingRange(r)}>
+                            <RangeSlider
+                                aria-label={['min', 'max']}
+                                defaultValue={ratingRange}
+                                min={1}
+                                max={5}
+                                onChangeEnd={(r) => setRatingRange(r)}
+                            >
                                 {new Array(5).fill('').map((_, i) => (
                                     <RangeSliderMark key={i} value={1 + i}>
                                         <Text fontSize={'sm'}>{1 + i}</Text>
@@ -163,7 +220,12 @@ const Recommendations = ({books: b}) => {
             )}
             <Center pt={4}>
                 {books.length ? (
-                    <SimpleGrid columns={{base: 1, md: 2, lg: 4}} spacing={4} autoRows={'25rem'} w={'80%'}>
+                    <SimpleGrid
+                        columns={{ base: 1, md: 2, lg: 4 }}
+                        spacing={4}
+                        autoRows={'25rem'}
+                        w={'80%'}
+                    >
                         {books.map((book, i) => (
                             <LinkBox
                                 key={i}
@@ -182,24 +244,37 @@ const Recommendations = ({books: b}) => {
                                     w={'100%'}
                                     h={'100%'}
                                 >
-                                    <Image src={book.image} h="100%" justifySelf={'center'} alt={'Book cover'}/>
-                                    <Heading alignSelf="center" p={4}>
+                                    <Image
+                                        src={book.image}
+                                        h="100%"
+                                        justifySelf={'center'}
+                                        alt={'Book cover'}
+                                    />
+                                    <Heading alignSelf="center" fontSize={'2xl'} textAlign={'center'} textOverflow={'ellipsis'} p={4}>
                                         {book.title}
                                     </Heading>
                                 </Grid>
                             </LinkBox>
                         ))}
                     </SimpleGrid>
-                ) : <Text fontSize={'2xl'} pt={8}>No results</Text>}
+                ) : (
+                    <Text fontSize={'2xl'} pt={8}>
+                        No results
+                    </Text>
+                )}
             </Center>
         </Box>
     );
 };
 
 export const getServerSideProps = async () => {
-    const {data: books} = await supabase.from('books').select().order('created_at', {
-        ascending: false,
-    }).limit(50);
+    const { data: books } = await supabase
+        .from('books')
+        .select()
+        .order('created_at', {
+            ascending: false,
+        })
+        .limit(50);
     return {
         props: {
             books: JSON.parse(JSON.stringify(books)),

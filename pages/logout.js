@@ -1,7 +1,7 @@
-import {useEffect} from 'react';
-import {supabase} from '../lib/supabase';
-import {useRouter} from 'next/router';
-import {Center} from '@chakra-ui/react';
+import { useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useRouter } from 'next/router';
+import { Center } from '@chakra-ui/react';
 
 const Logout = () => {
     const router = useRouter();

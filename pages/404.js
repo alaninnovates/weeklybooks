@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-import {Link, Heading, Button, Center} from '@chakra-ui/react';
+import { Button, Center, Heading, Link } from '@chakra-ui/react';
 
 const FourOhFour = () => (
     <Center alignSelf={'center'} h={'100vh'} flexDir={'column'} gap={4}>
