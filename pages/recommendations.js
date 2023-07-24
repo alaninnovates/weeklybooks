@@ -76,15 +76,15 @@ const Recommendations = ({ books: b }) => {
 
     const searchBooks = async () => {
         setQueryIsLoading(true);
-        if (!search) {
-            toastError('Please enter a search term');
-            setQueryIsLoading(false);
-            return;
-        } else if (search.length < 3) {
-            toastError('Please enter a longer search term');
-            setQueryIsLoading(false);
-            return;
-        }
+        // if (!search) {
+        //     toastError('Please enter a search term');
+        //     setQueryIsLoading(false);
+        //     return;
+        // } else if (search.length < 3) {
+        //     toastError('Please enter a longer search term');
+        //     setQueryIsLoading(false);
+        //     return;
+        // }
         const { data } = await supabase
             .from('books')
             .select()
@@ -187,9 +187,9 @@ const Recommendations = ({ books: b }) => {
                                 ml={4}
                                 onChange={(g) => setGenre(g.target.value)}
                             >
-                                {Object.values(Genre).map((genre) => (
+                                {Object.keys(Genre).map((genre) => (
                                     <option key={genre} value={genre}>
-                                        {genre}
+                                        {Genre[genre]}
                                     </option>
                                 ))}
                             </Select>
