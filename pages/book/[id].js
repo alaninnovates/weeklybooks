@@ -87,8 +87,11 @@ const Book = ({ book, characters, comments: commentsRaw }) => {
                 />
                 <Center flexDir={'column'}>
                     <Heading>{book.title}</Heading>
-                    <Text fontSize={'2xl'} pb={4}>
-                        By: {book.author}
+                    <Text fontSize={'2xl'}>
+                        Author: {book.author}
+                    </Text>
+                    <Text pb={4}>
+                        Recommended By: {book.profiles.display_name}
                     </Text>
                     <Text fontSize={'xl'} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                         {book.summary}
@@ -212,7 +215,7 @@ const Book = ({ book, characters, comments: commentsRaw }) => {
                                 <HStack>
                                     <Avatar h={8} w={8}/>
                                     <Text fontSize={'xl'} alignSelf={'center'}>
-                                        Billy Bob Joe
+                                        {comment.profiles.display_name}
                                     </Text>
                                 </HStack>
                                 <Text fontSize={'md'} opacity={0.7}>
@@ -234,7 +237,7 @@ export const getServerSideProps = async (context) => {
     const { id } = context.query;
     const { data: book, error } = await supabase
         .from('books')
-        .select()
+        .select('*, profiles(display_name)')
         .eq('id', id)
         .maybeSingle();
     if (!book) {
@@ -248,9 +251,10 @@ export const getServerSideProps = async (context) => {
         .eq('book_id', id);
     const { data: comments, error: error3 } = await supabase
         .from('comments')
-        .select()
+        .select('*, profiles(display_name)')
         .order('created_at', { ascending: false })
         .eq('book_id', id);
+    console.log(book);
     return {
         props: {
             book: JSON.parse(JSON.stringify(book)),
